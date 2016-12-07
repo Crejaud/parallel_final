@@ -75,7 +75,7 @@ int main() {
 
   // sequential
   for (auto& substring: substrings_seq) {
-    cout << "Finding palindromes in anagrams of " << substring << endl;
+    //cout << "Finding palindromes in anagrams of " << substring << endl;
     find_palindromes_of_anagrams(substring, 0);
   }
 
@@ -234,7 +234,7 @@ void find_palindromes_of_anagrams(string substring, int flag) {
 
 void find_palindromes_of_anagrams_par(int start, int end) {
   for (; start < end; start++) {
-    cout << "Finding palindromes in anagrams of " << substrings_par[start] << endl;
+    //cout << "Finding palindromes in anagrams of " << substrings_par[start] << endl;
     find_palindromes_of_anagrams(substrings_par[start], 1);
   }
 }
@@ -246,7 +246,7 @@ void recursive_palindrome_anagram_finder(string pre, string single, string doubl
     int pre_length_before_single = pre.size();
     pre += single;
     // now we mirror it over
-    for (i = pre_length_before_single - 1; i >= 0; i++) {
+    for (i = pre_length_before_single - 1; i >= 0; i--) {
       pre += pre[i];
     }
     // now add pre to list of palindromes_seq because this is a palindrome
