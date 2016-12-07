@@ -94,29 +94,36 @@ int main() {
   start = clock();
 
   // parallel
-  i = 0;
   int num_threads;
   cout << "How many threads would you like to run? [1-8] ";
   cin >> num_threads;
 
+  if (num_threads > substrings_par.size())
+    num_threads = substrings_par.size();
+
   thread *myThreads = new thread[num_threads];
-  for (auto& substring: substrings_par) {
-    if (i >= num_threads) {
-      for (i = 0; i < num_threads; i++) {
-        myThreads[i].join();
-      }
-      i = 0;
-    }
-    cout << "Finding palindromes in anagrams of " << substring << endl;
-    myThreads[i] = thread(find_palindromes_of_anagrams, substring, 1);
-    i++;
+
+  // span it
+  int span = substrings_par.size()/num_threads;
+  int first, last;
+
+  for (i = 0; i < num_threads; i++) {
+    first = i*span;
+    last = (i+1)*span;
+
+    if (i == num_threads - 1)
+      last = substrings_par.size();
+
+    cout << first << ", " << last << ", " << span << endl;
+
+    myThreads[i] = thread(find_palindromes_of_anagrams_par, first, last);
   }
 
   for (i = 0; i < num_threads; i++) {
     myThreads[i].join();
   }
 
-  delete [] myThreads;
+  cout << "Freeing myThreads" << endl;
 
   end = clock();
 
@@ -131,8 +138,6 @@ int main() {
   cout << "----------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------" << endl;
 
-  cout << "Here are the palindromes that I found:" << endl;
-
   return 0;
 }
 
@@ -146,24 +151,45 @@ void get_all_substrings_seq(string word) {
 }
 
 void get_all_substrings_par(string word) {
-  int i;
-  thread *myThreads = new thread[word.size()];
-  for (i = 0; i < word.size(); i++) {
-    // create thread
-    myThreads[i] = thread(get_all_substrings_par_thread, word, i);
+  int i, j;
+  int num_threads;
+  cout << "How many threads would you like to run? [1-8] ";
+  cin >> num_threads;
+
+  if (num_threads > word.size())
+    num_threads = word.size();
+
+  thread *myThreads = new thread[num_threads];
+
+  // span it
+  int span = word.size()/num_threads;
+  int first, last;
+
+  for (i = 0; i < num_threads; i++) {
+    first = i*span;
+    last = (i+1)*span;
+
+    if (i == num_threads - 1)
+      last = word.size();
+
+    cout << first << ", " << last << ", " << span << endl;
+
+    myThreads[i] = thread(get_all_substrings_par_thread, word, first, last);
   }
 
-  for (i = 0; i < word.size(); i++) {
+  cout << "Waiting on threads." << endl;
+  for (i = 0; i < num_threads; i++) {
+    cout << "Waiting for thread " << i << endl;
     myThreads[i].join();
   }
-
-  delete [] myThreads;
 }
 
-void get_all_substrings_par_thread(string word, int i) {
+void get_all_substrings_par_thread(string word, int start, int end) {
   int j;
-  for (j = 1; j <= word.size() - i; j++) {
-    substrings_par.push_back(word.substr(i, i+j));
+  for (; start < end; start++) {
+    for (j = 1; j <= word.size() - start; j++) {
+      substrings_par.push_back(word.substr(start, start+j));
+    }
   }
 }
 
@@ -199,6 +225,12 @@ void find_palindromes_of_anagrams(string substring, int flag) {
 
   // now we must find all palindromes of all anagrams of this substring!
   recursive_palindrome_anagram_finder("", single, double_letters, flag);
+}
+
+void find_palindromes_of_anagrams_par(int start, int end) {
+  for (; start < end; start++) {
+    find_palindromes_of_anagrams(substrings_par[start], 1);
+  }
 }
 
 void recursive_palindrome_anagram_finder(string pre, string single, string double_letters, int flag) {
