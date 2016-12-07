@@ -4,6 +4,8 @@
 #include <ctime>
 #include <thread>
 #include <mutex>
+#include <cuda.h>
+#include <cuda_runtime_api.h>
 #include "complex_pal.h"
 using namespace std;
 
@@ -19,7 +21,7 @@ mutex mtx;
 
 int main() {
   clock_t start, end;
-  double sub_duration_seq, pal_duration_seq, sub_duration_par, pal_duration_par;
+  double sub_duration_seq, pal_duration_seq, sub_duration_par, pal_duration_par, pal_duration_cuda;
   int word_length;
   string word = "";
   int i,j;
@@ -141,6 +143,23 @@ int main() {
   cout << "[Parallel] Total duration: " << sub_duration_par + pal_duration_par << " clock cycles" << endl;
   cout << "----------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------" << endl;
+
+  start = clock();
+  cudaEvent_t	start_gpu, stop_gpu;
+	cudaEventCreate(&start_gpu);
+	cudaEventCreate(&stop_gpu);
+	cudaEventRecord(start_gpu, 0);
+
+  find_palindromes_of_anagrams_cuda(substrings_seq);
+
+  cudaEventRecord(stop_gpu, 0);
+	cudaEventSynchronize(stop_gpu);
+
+	float gpu_elapsed_time;
+	cudaEventElapsedTime(&gpu_elapsed_time, start_gpu, stop_gpu);
+	printf( "Time for GPU To Compute Product: %.5f s\n", gpu_elapsed_time/1000.0f );
+	cudaEventDestroy(start_gpu);
+	cudaEventDestroy(stop_gpu);
 
   return 0;
 }
