@@ -136,7 +136,7 @@ int main() {
   cout << "----------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------" << endl;
   cout << "[Parallel] Found " << palindromes_par.size() << " palindromes." << endl;
-  cout << "[Parallel] Finding substrings: " << sub_duration_par << "clock cycles" << endl;
+  cout << "[Parallel] Finding substrings: " << sub_duration_par << " clock cycles" << endl;
   cout << "[Parallel] Finding existance of palindromes of anagrams of substrings took: " << pal_duration_par << " clock cycles" << endl;
   cout << "[Parallel] Total duration: " << sub_duration_par + pal_duration_par << " clock cycles" << endl;
   cout << "----------------------------------------------------------" << endl;
