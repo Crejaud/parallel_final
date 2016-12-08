@@ -325,7 +325,7 @@ __global__ void find_palindromes_of_anagrams_cuda(string double_letters, string 
 void kernel_substring_wrapper(string word) {
   dim3 threads_per_block(8, 8);
   dim3 blocks_per_dimension(word.size()/8, word.size()/8);
-  get_all_substrings_cuda<<<blocks_per_dimension, threads_per_block>>>(string word);
+  get_all_substrings_cuda<<<blocks_per_dimension, threads_per_block>>>(word);
 }
 
 void kernel_palindrome_wrapper(vector<string> substrings) {
