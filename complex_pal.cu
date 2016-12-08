@@ -306,13 +306,13 @@ __global__ void get_all_substrings_cuda(string word) {
 __global__ void find_palindromes_of_anagrams_cuda(string double_letters, string single, int num_perms) {
   unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-  string perm = substring;
+  string perm = double_letters;
 
   if (i >= num_perms) {
     return;
   }
 
-  for (int b = double_letters.size(), div = num_perms, b > 0; b--) {
+  for (int b = double_letters.size(), div = num_perms; b > 0; b--) {
     div/=b;
     int index = (i/div)%b;
     // perm is a permutation!
@@ -329,8 +329,8 @@ void kernel_substring_wrapper(string word) {
 }
 
 void kernel_palindrome_wrapper(vector<string> substrings) {
-  for (int sub_index = 0; i < substrings.size(); i++) {
-    string substring = substrings[i];
+  for (int sub_index = 0; sub_index < substrings.size(); sub_index++) {
+    string substring = substrings[sub_index];
     int frequencies[26] = {0};
     int i;
     int size_of_substring = substring.size();
