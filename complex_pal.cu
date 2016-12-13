@@ -167,18 +167,31 @@ int main() {
   }
 
   cudaEvent_t	start_gpu, stop_gpu;
+  double gpu_elapsed_time;
 	cudaEventCreate(&start_gpu);
 	cudaEventCreate(&stop_gpu);
+  cudaMalloc((void**) &word_cuda, word_length * sizeof(char));
+  cudaMemcpy(word_cuda, word.c_str(), word_length * sizeof(char), cudaMemcpyHostToDevice);
+
+  cudaEventRecord(start_gpu, 0);
+
+  kernel_substring_wrapper(word_cuda, word_length);
+
+  cudaEventRecord(stop_gpu, 0);
+	cudaEventSynchronize(stop_gpu);
+	cudaEventElapsedTime(&gpu_elapsed_time, start_gpu, stop_gpu);
+  printf("Time for GPU To Compute Product: %.5f s\n", gpu_elapsed_time/1000.0f);
+
+
 	cudaEventRecord(start_gpu, 0);
 
   kernel_palindrome_wrapper(substrings_cuda, substrings_seq.size());
 
   cudaEventRecord(stop_gpu, 0);
 	cudaEventSynchronize(stop_gpu);
-
-	double gpu_elapsed_time;
 	cudaEventElapsedTime(&gpu_elapsed_time, start_gpu, stop_gpu);
-	printf( "Time for GPU To Compute Product: %.5f s\n", gpu_elapsed_time/1000.0f );
+	printf("Time for GPU To Compute Product: %.5f s\n", gpu_elapsed_time/1000.0f);
+
 	cudaEventDestroy(start_gpu);
 	cudaEventDestroy(stop_gpu);
 
@@ -325,12 +338,50 @@ __global__ void get_all_substrings_cuda(char* word, int length) {
 
 // palindromes
 __global__ void find_palindromes_of_anagrams_cuda(char** double_letters, int double_letters_size, char single, int num_perms) {
-  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  unsigned int xindex = blockIdx.x * blockDim.x + threadIdx.x;
+
+  char** substring = substrings[sub_index];
+  int frequencies[26] = {0};
+  int i;
+  int size_of_substring = sizeof(substring)/sizeof(char);
+  char single = '\0';
+  char** double_letters = "";
+  // gets frequencies of each character in the substring.
+  for (i = 0; i < size_of_substring; i++) {
+    int ascii_val = substring[i] - 'A';
+    frequencies[ascii_val]++;
+    if (frequencies[ascii_val] > 1 && frequencies[ascii_val] % 2 == 0) {
+      double_letters += substring[i];
+    }
+  }
+  // can't make a palindrome.
+  if (double_letters.empty()) {
+    return;
+  }
+
+  for (i = 0; i < 26; i++) {
+    if (frequencies[i] >= 1 && frequencies[i] % 2 == 1) {
+      if (single == '\0') {
+        single = i+'A';
+      } else {
+        // there are no palindromes of any anagram of this substring
+        return;
+      }
+    }
+  }
+
+  int num_perms = 1;
+  int size_of_double_letters = sizeof(double_letters)/sizeof(char);
+  // get the number of permuations
+  for (i=1; i<=size_of_double_letters; num_perms*=i++);
 
   char** perm = malloc(strlen(double_letters) + 1);
   strcpy(perm, double_letters);
 
-  if (i >= num_perms) {
+
+  // FIND PAL
+  if (xindex >= num_perms) {
     return;
   }
 
