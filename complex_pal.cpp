@@ -14,9 +14,6 @@ void find_palindromes_of_anagrams_par_loop(int);
 void find_palindromes_of_anagrams_par(int, int);
 void recursive_palindrome_anagram_finder(string, string, string, int);
 
-void find_permutations_par(string, int);
-void find_permutations(string, int, int, int);
-
 string setupWord(int);
 
 static const char capital_letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -43,7 +40,6 @@ int main() {
 
   cout << "[Sequential] Computing substrings." << endl;
 
-/*
   // start clock for getting substrings.
   start = clock();
 
@@ -117,38 +113,6 @@ int main() {
   cout << "[Parallel] Finding substrings: " << sub_duration_par << " clock cycles" << endl;
   cout << "[Parallel] Finding existance of palindromes of anagrams of substrings took: " << pal_duration_par << " clock cycles" << endl;
   cout << "[Parallel] Total duration: " << sub_duration_par + pal_duration_par << " clock cycles" << endl;
-  cout << "----------------------------------------------------------" << endl;
-  cout << "----------------------------------------------------------" << endl;
-*/
-  start = clock();
-  int perm=1, digits=word.size();
-  for (int k=1;k<=digits;perm*=k++);
-  find_permutations(word, 0, perm, perm);
-
-  end = clock();
-
-  pal_duration_par = (end - start)/(double) CLOCKS_PER_SEC;
-
-  cout << "----------------------------------------------------------" << endl;
-  cout << "----------------------------------------------------------" << endl;
-  cout << "[Sequential] Permutations: " << pal_duration_par << " clock cycles" << endl;
-  cout << "----------------------------------------------------------" << endl;
-  cout << "----------------------------------------------------------" << endl;
-
-  cout << "How many threads would you like to run? [1-8] ";
-  cin >> num_threads;
-
-  start = clock();
-
-  find_permutations_par(word, num_threads);
-
-  end = clock();
-
-  pal_duration_par = (end - start)/(double) CLOCKS_PER_SEC;
-
-  cout << "----------------------------------------------------------" << endl;
-  cout << "----------------------------------------------------------" << endl;
-  cout << "[Parallel] Permutations: " << pal_duration_par << " clock cycles" << endl;
   cout << "----------------------------------------------------------" << endl;
   cout << "----------------------------------------------------------" << endl;
 
@@ -237,59 +201,6 @@ void find_palindromes_of_anagrams(string substring, int flag) {
 
   // now we must find all palindromes of all anagrams of this substring!
   recursive_palindrome_anagram_finder("", single, double_letters, flag);
-}
-
-void find_permutations_par(string word, int num_threads) {
-
-  int perm = 1, digits = word.size();
-  for (int k = 1;k <= digits; perm *= k++);
-
-  if (num_threads > word.size())
-    num_threads = word.size();
-
-  thread *myThreads = new thread[num_threads];
-
-  // span it
-  int span = perm/num_threads;
-  int first, last;
-
-  for (int i = 0; i < num_threads; i++) {
-    first = i*span;
-    last = (i+1)*span;
-
-    if (i == num_threads - 1)
-      last = perm;
-
-    //cout << first << ", " << last << ", " << span << endl;
-
-    myThreads[i] = thread(find_permutations, word, first, last, perm);
-  }
-
-  for (int j = 0; j < num_threads; j++) {
-    myThreads[j].join();
-  }
-
-  //cout << "Freeing myThreads" << endl;
-  delete [] myThreads;
-}
-
-void find_permutations(string word, int first, int last, int num_perm) {
- for (;first<last;first++) {
-    string temp = word;
-
-    int div = num_perm;
-    string perm = "";
-    for (int digit = word.size();b>0; b--)
-    {
-      // compute the number of repetitions for one character in the actual column
-      div /= digit;
-      //compute the index of the character in the string
-      int index = (first / div) % digit;
-      perm += temp[index];
-      //remove the used character
-      temp.erase(index,1) ;
-    }
-  }
 }
 
 void find_palindromes_of_anagrams_par_loop(int num_threads) {
