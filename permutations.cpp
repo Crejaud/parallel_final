@@ -6,6 +6,8 @@
 #include <mutex>
 using namespace std;
 
+void find_permutations_rec_par(string, int);
+void find_permutations_rec_par_helper(string, string, int);
 void find_permutations_rec(string);
 void find_permutations_rec_helper(string, string);
 void find_permutations_par(string, int);
@@ -52,10 +54,20 @@ int main() {
 
 
 
-
-
   cout << "How many threads would you like to run? [1-8] ";
   cin >> num_threads;
+
+  start = clock();
+
+  find_permutations_rec_par(word, num_threads);
+
+  end = clock();
+
+  duration = (end - start)/(double) CLOCKS_PER_SEC;
+
+  cout << "[Parallel - Recursive] Permutations: " << duration << " clock cycles" << endl;
+
+
 
   start = clock();
   // do parallel iterative
@@ -153,6 +165,42 @@ string setupWord(int word_length) {
   return word;
 }
 
+void find_permutations_rec_par(string word, int num_threads) {
+  find_permutations_rec_par_helper("", word, num_threads);
+}
+
+void find_permutations_rec_par_helper(string pre, string post, int num_threads) {
+  if (post.empty()) {
+    return;
+  }
+
+  if (num_threads > post.size()) {
+    num_threads = post.size();
+  }
+
+  thread *myThreads = new thread[num_threads];
+
+  int num_t = 0;
+
+  for (int i = 0; i < post.size(); i++) {
+    if (num_t >= num_threads) {
+    find_permutations_rec_helper(pre + post[i],
+      post.substr(0, i) + post.substr(i+1));
+    } else {
+      myThreads[num_t] = thread(find_permutations_rec_helper, pre + post[i],
+        post.substr(0, i) + post.substr(i+1));
+    }
+    num_t++;
+  }
+
+  for (int j = 0; j < num_threads; j++) {
+    myThreads[j].join();
+  }
+
+  //cout << "Freeing myThreads" << endl;
+  delete [] myThreads;
+
+}
 
 void find_permutations_rec(string word) {
   find_permutations_rec_helper("", word);
