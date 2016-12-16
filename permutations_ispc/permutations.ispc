@@ -1,4 +1,4 @@
-const uniform int word_length = 10;
+const uniform int word_length = 11;
 
 static void find_permutation(uniform int word[], uniform unsigned int64 num_perm, unsigned int64 i)
 {
